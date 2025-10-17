@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 스트레스 설문 플랫폼</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌿 스트레스야 물러가라~!</h1>
+      <p>나의 스트레스 패턴을 알아보고 마음의 균형을 찾아보세요</p>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('survey')">🧠 설문하기</button>
+      <button class="nav-tab" onclick="showTab('tips')">🌸 스트레스 관리 팁</button>
+      <button class="nav-tab" onclick="showTab('stats')">📊 결과 보기</button>
+    </div>
+
+    <!-- 설문하기 탭 -->
+    <div id="survey" class="tab-content active">
+      <form id="stress-form" name="stress-form">
+        <!-- 질문 1 -->
+        <div class="form-group">
+          <label>1️⃣ 스트레스를 가장 많이 느끼는 상황은 언제인가요? (복수선택 가능)</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="q1-1" name="stress_situation" value="학업·업무가 많을 때"><label for="q1-1" class="option-box">📚 학업·업무가 많을 때</label>
+            <input type="checkbox" id="q1-2" name="stress_situation" value="인간관계 문제"><label for="q1-2" class="option-box">🤝 인간관계 문제</label>
+            <input type="checkbox" id="q1-3" name="stress_situation" value="미래나 진로 고민"><label for="q1-3" class="option-box">🌅 미래나 진로 고민</label>
+            <input type="checkbox" id="q1-4" name="stress_situation" value="경제적 문제"><label for="q1-4" class="option-box">💰 경제적 문제</label>
+            <input type="checkbox" id="q1-5" name="stress_situation" value="건강 문제"><label for="q1-5" class="option-box">💊 건강 문제</label>
+            <input type="checkbox" id="q1-6" name="stress_situation" value="기타"><label for="q1-6" class="option-box">✏️ 기타</label>
+          </div>
+          <input type="text" name="stress_situation_etc" placeholder="기타를 선택했다면 입력해주세요">
+        </div>
+
+        <!-- 질문 2 -->
+        <div class="form-group">
+          <label>2️⃣ 스트레스를 해소하기 위해 주로 하는 행동은 무엇인가요? (복수선택 가능)</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="q2-1" name="stress_action" value="음악 듣기"><label for="q2-1" class="option-box">🎧 음악 듣기</label>
+            <input type="checkbox" id="q2-2" name="stress_action" value="영화 보기"><label for="q2-2" class="option-box">🎬 영화 보기</label>
+            <input type="checkbox" id="q2-3" name="stress_action" value="게임하기"><label for="q2-3" class="option-box">🎮 게임하기</label>
+            <input type="checkbox" id="q2-4" name="stress_action" value="잠자기 / 휴식하기"><label for="q2-4" class="option-box">😴 잠자기 / 휴식하기</label>
+            <input type="checkbox" id="q2-5" name="stress_action" value="운동 / 산책"><label for="q2-5" class="option-box">🏃 운동 / 산책</label>
+            <input type="checkbox" id="q2-6" name="stress_action" value="맛있는 음식 먹기"><label for="q2-6" class="option-box">🍜 맛있는 음식 먹기</label>
+            <input type="checkbox" id="q2-7" name="stress_action" value="혼자만의 시간 갖기"><label for="q2-7" class="option-box">🧘 혼자만의 시간 갖기</label>
+            <input type="checkbox" id="q2-8" name="stress_action" value="친구·가족과 대화하기"><label for="q2-8" class="option-box">💬 친구·가족과 대화하기</label>
+            <input type="checkbox" id="q2-9" name="stress_action" value="쇼핑 / 소비활동"><label for="q2-9" class="option-box">🛍 쇼핑 / 소비활동</label>
+            <input type="checkbox" id="q2-10" name="stress_action" value="기타"><label for="q2-10" class="option-box">✏️ 기타</label>
+          </div>
+          <input type="text" name="stress_action_etc" placeholder="기타를 선택했다면 입력해주세요">
+        </div>
+
+        <!-- 질문 3 -->
+        <div class="form-group">
+          <label>3️⃣ 스트레스를 풀기 좋은 시간대는 언제인가요?</label>
+          <div class="radio-group">
+            <input type="radio" id="q3-1" name="best_time" value="아침" required><label for="q3-1" class="option-box">🌞 아침</label>
+            <input type="radio" id="q3-2" name="best_time" value="낮"><label for="q3-2" class="option-box">☀️ 낮</label>
+            <input type="radio" id="q3-3" name="best_time" value="저녁"><label for="q3-3" class="option-box">🌇 저녁</label>
+            <input type="radio" id="q3-4" name="best_time" value="밤 / 새벽"><label for="q3-4" class="option-box">🌙 밤 / 새벽</label>
+          </div>
+        </div>
+
+        <!-- 질문 4 -->
+        <div class="form-group">
+          <label>4️⃣ 스트레스 해소에 도움이 된다고 느끼는 콘텐츠나 서비스는 무엇인가요? (복수선택 가능)</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="q4-1" name="content_service" value="명상 앱"><label for="q4-1" class="option-box">🪷 명상 앱</label>
+            <input type="checkbox" id="q4-2" name="content_service" value="힐링 음악 / ASMR"><label for="q4-2" class="option-box">🎧 힐링 음악 / ASMR</label>
+            <input type="checkbox" id="q4-3" name="content_service" value="유튜브 / OTT 콘텐츠"><label for="q4-3" class="option-box">📺 유튜브 / OTT 콘텐츠</label>
+            <input type="checkbox" id="q4-4" name="content_service" value="SNS / 커뮤니티 활동"><label for="q4-4" class="option-box">💬 SNS / 커뮤니티 활동</label>
+            <input type="checkbox" id="q4-5" name="content_service" value="취미 관련 콘텐츠"><label for="q4-5" class="option-box">🎨 취미 관련 콘텐츠</label>
+            <input type="checkbox" id="q4-6" name="content_service" value="기타"><label for="q4-6" class="option-box">✏️ 기타</label>
+          </div>
+          <input type="text" name="content_service_etc" placeholder="기타를 선택했다면 입력해주세요">
+        </div>
+
+        <!-- 질문 5 -->
+        <div class="form-group">
+          <label>5️⃣ 본인만의 특별한 스트레스 해소 방법이 있다면 알려주세요</label>
+          <textarea name="special_method" rows="3" placeholder="나만의 스트레스 해소 방법을 자유롭게 적어주세요"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">✅ 설문 제출하기</button>
+      </form>
+    </div>
+
+    <!-- 스트레스 관리 팁 -->
+    <div id="tips" class="tab-content">
+      <h3>🌸 스트레스 완화를 위한 작은 습관</h3>
+      <ul style="margin-top:15px; line-height:1.8; color:#555;">
+        <li>🌿 짧은 산책으로 뇌에 신선한 산소 공급하기</li>
+        <li>🎧 하루 10분 명상이나 심호흡으로 마음 정리</li>
+        <li>📖 좋아하는 책 한 페이지 읽으며 잠시 휴식</li>
+        <li>☕ 따뜻한 차 한 잔과 함께 하루 되돌아보기</li>
+        <li>📅 하루 목표를 작게 세우고 하나씩 완성해보기</li>
+      </ul>
+    </div>
+
+    <!-- 결과 탭 -->
+    <div id="stats" class="tab-content">
+      <h3>📊 스트레스 설문 결과 보기</h3>
+      <p style="color:#555; margin-top:10px;">
+        구글 스프레드시트 또는 Apps Script를 통해 자동 통계 시각화를 연동할 수 있습니다.
+      </p>
+      <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTSMrpnHDJ-rGjEIiOKQHOAAevSmRGjmOoSm57oRQ8b5TGfdhWWkjbqfrxIpeXVuhi5itbnXfodE9uF/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false" 
+      width="100%" height="400" style="border:none; border-radius:10px; margin-top:15px;"></iframe>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

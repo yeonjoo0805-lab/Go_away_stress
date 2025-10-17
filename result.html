@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 설문 결과 보기</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .result-box {
+      max-width: 600px;
+      background: white;
+      margin: 0 auto;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      padding: 40px 30px;
+    }
+    h1 {
+      color: #388e3c;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #555;
+      line-height: 1.8;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #26a69a, #80cbc4);
+      color: white;
+      padding: 14px 30px;
+      border-radius: 12px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 25px;
+      transition: transform .2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px rgba(38,166,154,0.3);
+    }
+    iframe {
+      margin-top: 30px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="result-box">
+    <h1>🌿 설문이 잘 제출되었습니다!</h1>
+    <p>참여해주셔서 감사드려요.<br>
+      아래에서 실시간으로 반영되는 설문 결과를 확인할 수 있습니다.</p>
+
+    <iframe 
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTSMrpnHDJ-rGjEIiOKQHOAAevSmRGjmOoSm57oRQ8b5TGfdhWWkjbqfrxIpeXVuhi5itbnXfodE9uF/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false" 
+      width="100%" height="400"></iframe>
+
+    <a href="index.html" class="btn">🧠 다시 설문하기</a>
+  </div>
+</body>
+</html>
