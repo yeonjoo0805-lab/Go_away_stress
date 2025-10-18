@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+// ✅ [수정] '핸드셰이크' 기능이 있는 "진짜" URL로 되돌렸습니다.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwjEs8E639NnWXBR80vxaC_TiojfPcfpwuq-GwfgD2j9__sHOFafiR0DYf0-p9jfCYS9A/exec";
 // =======================
 
@@ -291,8 +291,7 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
 
 /**
  * ✅ [오타 수정] 페이지 로드 시 초기화
- * getElementById를 addEventListener로 수정하여
- * 1번 문항 2개 초과 선택 제한 기능이 다시 작동하도록 되돌렸습니다.
+ * 1번 문항 제한 기능이 다시 작동하도록 되돌렸습니다.
  */
 document.addEventListener('DOMContentLoaded', () => {
   setupEtcToggle();
