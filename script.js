@@ -3,7 +3,7 @@
 // =======================
 // 배포한 Google Apps Script 웹앱 URL (doGet/doPost 처리)
 // 🚨🚨🚨 배포 관리에서 새로 생성된 URL을 여기에 붙여넣어야 합니다. 🚨🚨🚨
-const GAS_URL = "https://script.google.com/macros/library/d/1cgndniCJZEcNLMZc0fKn0qPEUAal-CthdFsTqByBf2Vg0ZTGVlx5OOAT/3";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzIQ2Gg9ToX5Nb3CXmd6awE_OlnT21y0w8Xz-j4kzQ5nyoa9JsWIqiUOUFy1x6v7muB/exec";
 // =======================
 
 let charts = {};
