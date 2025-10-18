@@ -266,3 +266,22 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
     if (res && res.result === 'success') { 
       alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
       form.reset();
+      
+      // 제출 후 자동으로 통계 탭으로 이동
+      showTab('stats', true);
+    } else {
+      alert('제출 중 문제가 발생했습니다. 다시 시도해주세요.');
+    }
+  } catch (err) {
+    console.error('제출 오류:', err);
+    alert('제출 실패: 서버 연결을 확인해주세요.');
+  }
+});
+
+/**
+ * 페이지 로드 시 초기화
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  setupEtcToggle();
+  setupQ1Limit(2);
+});
