@@ -1,8 +1,8 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 새로 배포된 Google Apps Script 웹앱 URL (반드시 /exec 로 끝나야 하며, '모든 사용자'로 배포되어야 합니다.)
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyBO7EltbxDL1_SzwFZ2NQ7Ph9OuGVNIBNPsW_5XaNH4AMZEAu1_5h9eBaXboYh26pJWg/exec"; 
+// 🚨 [중요!] 아래 URL을 Apps Script에서 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyzV_z_pgfiVsqZVdlG24k_WNpIoXEgYEWTO2TeD0Y38n2dPQvlvKyWl2qZ6Asiv8n1jA/exec"; 
 // =======================
 
 let charts = {};
@@ -72,12 +72,12 @@ function postToGAS(formData) {
 
 /**
  * 통계 데이터를 가져오는 함수 (Apps Script의 getStats 호출)
+ * ✅ [수정] /dev URL 대신 정식 GAS_URL (/exec)을 사용하도록 변경
  */
 async function fetchStatsFromGAS() {
   try {
-    // getStats 함수는 ContentService.MimeType.JSON을 사용하므로 fetch 사용 가능합니다.
-    const devUrl = GAS_URL.replace('/exec', '/dev'); 
-    const res = await fetch(devUrl + '?action=getStats', { method: 'GET' });
+    // '/dev' URL 대신 '/exec' URL (GAS_URL)을 직접 사용하고 '?action=getStats'를 붙입니다.
+    const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET' });
     if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
     }
@@ -220,6 +220,9 @@ async function updateStatisticsTab() {
 
     if ((stats.total || 0) === 0) {
       document.getElementById('special-methods-list').innerHTML = '<li>아직 제출된 답변이 없습니다.</li>';
+      // 차트가 있다면 클리어 (선택 사항)
+      Object.keys(charts).forEach(key => charts[key].destroy());
+      charts = {};
       return;
     }
 
@@ -259,6 +262,11 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
     return;
   }
   
+  // 버튼 비활성화 (중복 제출 방지)
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '제출 중...';
+
   try {
     const res = await postToGAS(record);
     
@@ -274,6 +282,10 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
     }
   } catch (err) {
     alert('제출 실패. 네트워크 연결 또는 서버 설정을 확인하세요.');
+  } finally {
+    // 버튼 다시 활성화
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✅ 설문 제출하기';
   }
 });
 
