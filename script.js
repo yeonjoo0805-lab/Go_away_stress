@@ -1,8 +1,9 @@
+alert("!!! 새 스크립트 로드 성공 - 테스트 1 !!!");
+
 // =======================
-// 설정 (여기만 바꿔주세요)
+// 설정
 // =======================
-// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
-// ✅ [수정] URL 끝에 있던 보이지 않는 공백 문자를 제거했습니다.
+// ✅ URL은 완벽합니다. 절대 수정하지 마세요.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzeLllbDzauUzRJhD6XR0u9N9G2doJ_8_Y-39k5GN_wyjEhuRmAt-3moKhiDeDwv1nJeQ/exec";
 // =======================
 
