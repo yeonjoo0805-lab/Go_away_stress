@@ -1,10 +1,8 @@
-alert("!!! 새 스크립트 로드 성공 - 테스트 1 !!!");
-
 // =======================
-// 설정
+// 설정 (여기만 바꿔주세요)
 // =======================
-// ✅ URL은 완벽합니다. 절대 수정하지 마세요.
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzeLllbDzauUzRJhD6XR0u9N9G2doJ_8_Y-39k5GN_wyjEhuRmAt-3moKhiDeDwv1nJeQ/exec";
+// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwjEs8E639NnWXBR80vxaC_TiojfPcfpwuq-GwfgD2j9__sHOFafiR0DYf0-p9jfCYS9A/exec";
 // =======================
 
 let charts = {};
@@ -42,9 +40,18 @@ function postToGAS(formData) {
 
     // 핸들러 함수를 먼저 정의합니다.
     handler = function(event) {
-        if (!(event.origin.includes('google.com') || event.origin.includes('googleusercontent.com'))) {
-            return;
+        // [수정] Code.gs가 window.top으로 메시지를 보내므로, origin 체크가 더 중요해졌습니다.
+        // Google의 샌드박스에서 보낸 메시지가 맞는지 확인합니다.
+        if (event.origin !== "https://n-hxelffzk6y7vc3wseb644oyo4b6uo2jd2akk2qq-0lu-script.googleusercontent.com") {
+             // (참고: 이 origin 주소는 배포 ID마다 달라질 수 있으나, 보통 이 구조를 따릅니다.)
+             // (만약의 경우: event.origin.includes('googleusercontent.com')로 변경)
+             
+             // 더 안전한 방법으로 수정: google.com 또는 googleusercontent.com으로 확인
+             if (!(event.origin.includes('google.com') || event.origin.includes('googleusercontent.com'))) {
+                return;
+             }
         }
+        
         const data = event.data;
         if (data && data.status === 'iframe_ready') {
             try {
@@ -93,7 +100,6 @@ function postToGAS(formData) {
  */
 async function fetchStatsFromGAS() {
   try {
-    // '/dev' URL 대신 '/exec' URL (GAS_URL)을 직접 사용해야 합니다.
     const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET' });
     if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -164,7 +170,6 @@ function renderBarChart(canvasId, dataObj, total) {
   const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
   const values = labels.map(l => dataObj[l]);
   if (charts[canvasId]) charts[canvasId].destroy();
-  // ✅ [수정] 'D' 오타를 '2d'로 변경
   const ctx = document.getElementById(canvasId).getContext('2d'); 
   charts[canvasId] = new Chart(ctx, {
     type: 'bar', 
