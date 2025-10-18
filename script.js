@@ -1,7 +1,7 @@
 // =======================
-// 설정 (여기만 바꿔주세요)
+// 설정 (여기는 절대 바꾸지 마세요)
 // =======================
-// 🚨 [중요!] 아래 URL을 Apps Script에서 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+// 🚨 (이전 단계에서 배포한 URL을 그대로 사용하세요)
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyzV_z_pgfiVsqZVdlG24k_WNpIoXEgYEWTO2TeD0Y38n2dPQvlvKyWl2qZ6Asiv8n1jA/exec"; 
 // =======================
 
@@ -27,7 +27,9 @@ function showTab(tabName, updateChart = false) {
 }
 
 /**
- * ✅ 최종 FIX: SecurityError를 유발하는 코드 제거 및 50ms 지연 도입으로 통신 안정화
+ * ✅ [수정] postToGAS 함수 (레이스 컨디션 해결)
+ * iframe 로드 후 50ms 지연을 주어 Apps Script 샌드박스가 
+ * postMessage를 수신할 준비를 마치도록 보장합니다.
  */
 function postToGAS(formData) {
   return new Promise((resolve, reject) => {
@@ -38,45 +40,61 @@ function postToGAS(formData) {
     // 통신 타임아웃 설정: 10초
     const timeout = setTimeout(() => {
         window.removeEventListener("message", handler);
-        document.body.removeChild(iframe);
+        try { document.body.removeChild(iframe); } catch(e) {}
         reject({result: 'error', message: "서버 응답 시간 초과 (10초)"});
     }, 10000); 
 
-    // ✅ 응답 수신 리스너 
-    window.addEventListener("message", function handler(event) {
-        if (event.data && (event.data.result === 'success' || event.data.result === 'error')) {
-            clearTimeout(timeout); 
-            window.removeEventListener("message", handler);
-            document.body.removeChild(iframe);
-            
-            // Apps Script에서 보낸 응답이 맞는지 origin 체크
-            if (event.origin.includes('google.com') || event.origin.includes('googleusercontent.com')) {
-                 resolve(event.data);
-            } else {
-                 console.warn("Ignoring message from untrusted source:", event.origin);
+    // 응답 수신 리스너 
+    const handler = function(event) {
+        // Apps Script에서 보낸 응답이 맞는지 origin 체크
+        if (event.origin.includes('google.com') || event.origin.includes('googleusercontent.com')) {
+            if (event.data && (event.data.result === 'success' || event.data.result === 'error')) {
+                clearTimeout(timeout); 
+                window.removeEventListener("message", handler);
+                try { document.body.removeChild(iframe); } catch(e) {}
+                resolve(event.data);
             }
         }
-    });
+    };
+    window.addEventListener("message", handler);
 
+    // iframe을 body에 추가
     document.body.appendChild(iframe);
 
-    // ✅ 최종 수정 핵심: iframe 로드 후 **50ms의 아주 짧은 지연**을 주어 Apps Script의 내부 보안(Warden)이 준비될 시간을 줍니다.
+    // ✅ [수정된 부분]
+    // iframe.onload가 실행된 후, 50ms의 아주 짧은 지연을 주어
+    // iframe 내부의 스크립트(google.script.run)가 초기화될 시간을 줍니다.
     iframe.onload = () => {
         setTimeout(() => {
-            // 이 시점에는 postMessage를 통한 데이터 전송만 안전하게 허용됩니다.
-            iframe.contentWindow.postMessage(formData, "*");
-        }, 50); // 50밀리초 지연
+            try {
+                // 이 시점에 postMessage를 보내야 안전하게 수신됩니다.
+                iframe.contentWindow.postMessage(formData, "*");
+            } catch (e) {
+                // 오류 발생 시 즉시 reject
+                clearTimeout(timeout);
+                window.removeEventListener("message", handler);
+                try { document.body.removeChild(iframe); } catch(e2) {}
+                reject({ result: 'error', message: `postMessage 실패: ${e.message}` });
+            }
+        }, 50); // 50밀리초(0.05초) 지연
+    };
+
+    // iframe 로드 자체에 실패했을 경우
+    iframe.onerror = (e) => {
+        clearTimeout(timeout);
+        window.removeEventListener("message", handler);
+        try { document.body.removeChild(iframe); } catch(e2) {}
+        reject({ result: 'error', message: `iframe 로드 실패. GAS_URL을 확인하세요.` });
     };
   });
 }
 
 /**
  * 통계 데이터를 가져오는 함수 (Apps Script의 getStats 호출)
- * ✅ [수정] /dev URL 대신 정식 GAS_URL (/exec)을 사용하도록 변경
+ * (수정 없음 - 정상)
  */
 async function fetchStatsFromGAS() {
   try {
-    // '/dev' URL 대신 '/exec' URL (GAS_URL)을 직접 사용하고 '?action=getStats'를 붙입니다.
     const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET' });
     if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -220,7 +238,6 @@ async function updateStatisticsTab() {
 
     if ((stats.total || 0) === 0) {
       document.getElementById('special-methods-list').innerHTML = '<li>아직 제출된 답변이 없습니다.</li>';
-      // 차트가 있다면 클리어 (선택 사항)
       Object.keys(charts).forEach(key => charts[key].destroy());
       charts = {};
       return;
@@ -251,6 +268,7 @@ async function updateStatisticsTab() {
 
 /**
  * 폼 제출 이벤트 핸들러 (제출 후 화면 전환 담당)
+ * (수정 없음 - 정상)
  */
 document.getElementById('stress-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -262,7 +280,7 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
     return;
   }
   
-  // 버튼 비활성화 (중복 제출 방지)
+  // 버튼 비활성화
   const submitBtn = form.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   submitBtn.textContent = '제출 중...';
@@ -270,7 +288,6 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   try {
     const res = await postToGAS(record);
     
-    // 서버 응답이 성공(success)일 경우에만 결과 탭으로 전환
     if (res && res.result === 'success') { 
       alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
       form.reset();
@@ -278,10 +295,11 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
       showTab('stats', true);
     } else {
       console.error(res);
-      alert('제출 중 문제가 발생했습니다. (서버 응답 오류)');
+      alert(`제출 중 문제가 발생했습니다: ${res.message || '알 수 없는 오류'}`);
     }
   } catch (err) {
-    alert('제출 실패. 네트워크 연결 또는 서버 설정을 확인하세요.');
+    console.error(err);
+    alert(`제출 실패: ${err.message || '네트워크 연결 또는 서버 설정을 확인하세요.'}`);
   } finally {
     // 버튼 다시 활성화
     submitBtn.disabled = false;
