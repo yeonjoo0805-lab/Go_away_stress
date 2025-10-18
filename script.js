@@ -27,3 +27,26 @@ function postToGAS(formData) {
     }, 1000);
   });
 }
+// 탭 전환 함수
+function showTab(tabName, fetchStats = false) {
+  // 모든 탭 버튼 상태 초기화
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+
+  // 모든 탭 콘텐츠 숨기기
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  // 선택된 탭 보이기
+  const selectedTab = document.getElementById(tabName);
+  if (selectedTab) selectedTab.classList.add('active');
+
+  // 통계 탭이면 데이터 불러오기
+  if (fetchStats) {
+    if (typeof loadStatistics === 'function') {
+      loadStatistics();
+    }
+  }
+}
