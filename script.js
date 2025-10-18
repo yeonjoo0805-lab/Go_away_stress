@@ -1,7 +1,6 @@
 // =======================
-// 설정 (여기만 바꿔주세요)
+// 설정 (절대 수정 금지!)
 // =======================
-// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwjEs8E639NnWXBR80vxaC_TiojfPcfpwuq-GwfgD2j9__sHOFafiR0DYf0-p9jfCYS9A/exec";
 // =======================
 
@@ -27,7 +26,9 @@ function showTab(tabName, updateChart = false) {
 }
 
 /**
- * ✅ [최종본] postToGAS 함수 (핸드셰이크 + ReferenceError 버그 수정)
+ * ✅ [최종 수정] postToGAS 함수
+ * "15초 타임아웃"의 마지막 원인으로 의심되는 'event.origin' 보안 검사 코드를
+ * 테스트를 위해 '완전히 제거'합니다.
  */
 function postToGAS(formData) {
   return new Promise((resolve, reject) => {
@@ -40,19 +41,14 @@ function postToGAS(formData) {
 
     // 핸들러 함수를 먼저 정의합니다.
     handler = function(event) {
-        // [수정] Code.gs가 window.top으로 메시지를 보내므로, origin 체크가 더 중요해졌습니다.
-        // Google의 샌드박스에서 보낸 메시지가 맞는지 확인합니다.
-        if (event.origin !== "https://n-hxelffzk6y7vc3wseb644oyo4b6uo2jd2akk2qq-0lu-script.googleusercontent.com") {
-             // (참고: 이 origin 주소는 배포 ID마다 달라질 수 있으나, 보통 이 구조를 따릅니다.)
-             // (만약의 경우: event.origin.includes('googleusercontent.com')로 변경)
-             
-             // 더 안전한 방법으로 수정: google.com 또는 googleusercontent.com으로 확인
-             if (!(event.origin.includes('google.com') || event.origin.includes('googleusercontent.com'))) {
-                return;
-             }
-        }
         
+        // ✅ [수정] 보안을 위해 출처(origin)를 검사하는 코드를 '임시로' 모두 제거합니다.
+        // if (!(event.origin.includes('google.com') || ... )) { ... }
+        // 이제 이 리스너는 모든 출처의 postMessage를 수신합니다.
+
         const data = event.data;
+        
+        // 1. iframe이 "준비 완료" 신호를 보냈을 때
         if (data && data.status === 'iframe_ready') {
             try {
                 iframe.contentWindow.postMessage({ formData: formData }, "*");
@@ -64,6 +60,8 @@ function postToGAS(formData) {
             }
             return; 
         }
+
+        // 2. iframe이 최종 "성공/실패" 응답을 보냈을 때
         if (data && (data.result === 'success' || data.result === 'error')) {
             clearTimeout(timeout); 
             window.removeEventListener("message", handler);
@@ -96,7 +94,7 @@ function postToGAS(formData) {
 }
 
 /**
- * ✅ [수정] 통계 데이터를 가져오는 함수 ( /dev URL 버그 수정)
+ * 통계 데이터를 가져오는 함수 (수정 없음)
  */
 async function fetchStatsFromGAS() {
   try {
@@ -297,7 +295,7 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
 /**
  * 페이지 로드 시 초기화 (수정 없음)
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.getElementById('DOMContentLoaded', () => {
   setupEtcToggle();
   setupQ1Limit(2); 
   showTab('survey');
