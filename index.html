@@ -22,60 +22,71 @@
     <div id="survey" class="tab-content active">
       <form id="stress-form" name="stress-form">
         <div class="form-group">
-          <label>1️⃣ 스트레스를 느끼는 상황은 언제인가요? (최대 2개까지 선택 가능)</label>
-          <div class="checkbox-group" id="q1-checkbox-group">
-            <input type="checkbox" id="q1-1" name="stress_situation" value="학업·업무가 많을 때"><label for="q1-1" class="option-box">📚 학업·업무가 많을 때</label>
-            <input type="checkbox" id="q1-2" name="stress_situation" value="인간관계 문제"><label for="q1-2" class="option-box">🤝 인간관계 문제</label>
-            <input type="checkbox" id="q1-3" name="stress_situation" value="미래나 진로 고민"><label for="q1-3" class="option-box">🌅 미래나 진로 고민</label>
-            <input type="checkbox" id="q1-4" name="stress_situation" value="경제적 문제"><label for="q1-4" class="option-box">💰 경제적 문제</label>
-            <input type="checkbox" id="q1-5" name="stress_situation" value="건강 문제"><label for="q1-5" class="option-box">💊 건강 문제</label>
-            <input type="checkbox" id="q1-6" name="stress_situation" value="기타" data-etc-input="q1-etc"><label for="q1-6" class="option-box">✏️ 기타</label>
-          </div>
-          <input type="text" id="q1-etc" name="stress_situation_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
-        </div>
-
-        <div class="form-group">
-          <label>2️⃣ 스트레스를 해소하기 위해 주로 하는 행동은 무엇인가요? (복수선택 가능)</label>
-          <div class="checkbox-group" id="q2-checkbox-group">
-            <input type="checkbox" id="q2-1" name="stress_action" value="음악 듣기"><label for="q2-1" class="option-box">🎧 음악 듣기</label>
-            <input type="checkbox" id="q2-2" name="stress_action" value="영화 보기"><label for="q2-2" class="option-box">🎬 영화 보기</label>
-            <input type="checkbox" id="q2-3" name="stress_action" value="게임하기"><label for="q2-3" class="option-box">🎮 게임하기</label>
-            <input type="checkbox" id="q2-4" name="stress_action" value="잠자기 / 휴식하기"><label for="q2-4" class="option-box">😴 잠자기 / 휴식하기</label>
-            <input type="checkbox" id="q2-5" name="stress_action" value="운동 / 산책"><label for="q2-5" class="option-box">🏃 운동 / 산책</label>
-            <input type="checkbox" id="q2-6" name="stress_action" value="맛있는 음식 먹기"><label for="q2-6" class="option-box">🍜 맛있는 음식 먹기</label>
-            <input type="checkbox" id="q2-7" name="stress_action" value="혼자만의 시간 갖기"><label for="q2-7" class="option-box">🧘 혼자만의 시간 갖기</label>
-            <input type="checkbox" id="q2-8" name="stress_action" value="친구·가족과 대화하기"><label for="q2-8" class="option-box">💬 친구·가족과 대화하기</label>
-            <input type="checkbox" id="q2-9" name="stress_action" value="쇼핑 / 소비활동"><label for="q2-9" class="option-box">🛍 쇼핑 / 소비활동</label>
-            <input type="checkbox" id="q2-10" name="stress_action" value="기타" data-etc-input="q2-etc"><label for="q2-10" class="option-box">✏️ 기타</label>
-          </div>
-          <input type="text" id="q2-etc" name="stress_action_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
-        </div>
-
-        <div class="form-group">
-          <label>3️⃣ 스트레스를 풀기 좋은 시간대는 언제인가요?</label>
+          <label>1️⃣ 현재 본인의 스트레스 수준은 어느 정도입니까?</label>
           <div class="radio-group">
-            <input type="radio" id="q3-1" name="best_time" value="아침"><label for="q3-1" class="option-box">🌞 아침</label>
-            <input type="radio" id="q3-2" name="best_time" value="낮"><label for="q3-2" class="option-box">☀️ 낮</label>
-            <input type="radio" id="q3-3" name="best_time" value="저녁"><label for="q3-3" class="option-box">🌇 저녁</label>
-            <input type="radio" id="q3-4" name="best_time" value="밤 / 새벽"><label for="q3-4" class="option-box">🌙 밤 / 새벽</label>
+            <input type="radio" id="level-1" name="stress_level" value="1점 (전혀 없음)"><label for="level-1" class="option-box">전혀 없음</label>
+            <input type="radio" id="level-2" name="stress_level" value="2점 (약간 있음)"><label for="level-2" class="option-box">약간 있음</label>
+            <input type="radio" id="level-3" name="stress_level" value="3점 (보통 수준)"><label for="level-3" class="option-box">보통 수준</label>
+            <input type="radio" id="level-4" name="stress_level" value="4점 (다소 높음)"><label for="level-4" class="option-box">다소 높음</label>
+            <input type="radio" id="level-5" name="stress_level" value="5점 (매우 높음)"><label for="level-5" class="option-box">매우 높음</label>
           </div>
         </div>
 
         <div class="form-group">
-          <label>4️⃣ 스트레스 해소에 도움이 된다고 느끼는 콘텐츠나 서비스는 무엇인가요? (복수선택 가능)</label>
-          <div class="checkbox-group" id="q4-checkbox-group">
-            <input type="checkbox" id="q4-1" name="content_service" value="명상 앱"><label for="q4-1" class="option-box">🪷 명상 앱</label>
-            <input type="checkbox" id="q4-2" name="content_service" value="힐링 음악 / ASMR"><label for="q4-2" class="option-box">🎧 힐링 음악 / ASMR</label>
-            <input type="checkbox" id="q4-3" name="content_service" value="유튜브 / OTT 콘텐츠"><label for="q4-3" class="option-box">📺 유튜브 / OTT 콘텐츠</label>
-            <input type="checkbox" id="q4-4" name="content_service" value="SNS / 커뮤니티 활동"><label for="q4-4" class="option-box">💬 SNS / 커뮤니티 활동</label>
-            <input type="checkbox" id="q4-5" name="content_service" value="취미 관련 콘텐츠"><label for="q4-5" class="option-box">🎨 취미 관련 콘텐츠</label>
-            <input type="checkbox" id="q4-6" name="content_service" value="기타" data-etc-input="q4-etc"><label for="q4-6" class="option-box">✏️ 기타</label>
+          <label>2️⃣ 스트레스를 느끼는 상황은 언제인가요? (최대 2개까지 선택 가능)</label>
+          <div class="checkbox-group" id="q2-checkbox-group">
+            <input type="checkbox" id="q2-1" name="stress_situation" value="학업·업무가 많을 때"><label for="q2-1" class="option-box">📚 학업·업무가 많을 때</label>
+            <input type="checkbox" id="q2-2" name="stress_situation" value="인간관계 문제"><label for="q2-2" class="option-box">🤝 인간관계 문제</label>
+            <input type="checkbox" id="q2-3" name="stress_situation" value="미래나 진로 고민"><label for="q2-3" class="option-box">🌅 미래나 진로 고민</label>
+            <input type="checkbox" id="q2-4" name="stress_situation" value="경제적 문제"><label for="q2-4" class="option-box">💰 경제적 문제</label>
+            <input type="checkbox" id="q2-5" name="stress_situation" value="건강 문제"><label for="q2-5" class="option-box">💊 건강 문제</label>
+            <input type="checkbox" id="q2-6" name="stress_situation" value="기타" data-etc-input="q2-etc"><label for="q2-6" class="option-box">✏️ 기타</label>
           </div>
-          <input type="text" id="q4-etc" name="content_service_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
+          <input type="text" id="q2-etc" name="stress_situation_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
+        </div>
+
+        <div class="form-group">
+          <label>3️⃣ 스트레스를 해소하기 위해 주로 하는 행동은 무엇인가요? (복수선택 가능)</label>
+          <div class="checkbox-group" id="q3-checkbox-group">
+            <input type="checkbox" id="q3-1" name="stress_action" value="음악 듣기"><label for="q3-1" class="option-box">🎧 음악 듣기</label>
+            <input type="checkbox" id="q3-2" name="stress_action" value="영화 보기"><label for="q3-2" class="option-box">🎬 영화 보기</label>
+            <input type="checkbox" id="q3-3" name="stress_action" value="게임하기"><label for="q3-3" class="option-box">🎮 게임하기</label>
+            <input type="checkbox" id="q3-4" name="stress_action" value="잠자기 / 휴식하기"><label for="q3-4" class="option-box">😴 잠자기 / 휴식하기</label>
+            <input type="checkbox" id="q3-5" name="stress_action" value="운동 / 산책"><label for="q3-5" class="option-box">🏃 운동 / 산책</label>
+            <input type="checkbox" id="q3-6" name="stress_action" value="맛있는 음식 먹기"><label for="q3-6" class="option-box">🍜 맛있는 음식 먹기</label>
+            <input type="checkbox" id="q3-7" name="stress_action" value="혼자만의 시간 갖기"><label for="q3-7" class="option-box">🧘 혼자만의 시간 갖기</label>
+            <input type="checkbox" id="q3-8" name="stress_action" value="친구·가족과 대화하기"><label for="q3-8" class="option-box">💬 친구·가족과 대화하기</label>
+            <input type="checkbox" id="q3-9" name="stress_action" value="쇼핑 / 소비활동"><label for="q3-9" class="option-box">🛍 쇼핑 / 소비활동</label>
+            <input type="checkbox" id="q3-10" name="stress_action" value="기타" data-etc-input="q3-etc"><label for="q3-10" class="option-box">✏️ 기타</label>
+          </div>
+          <input type="text" id="q3-etc" name="stress_action_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
+        </div>
+
+        <div class="form-group">
+          <label>4️⃣ 스트레스를 풀기 좋은 시간대는 언제인가요?</label>
+          <div class="radio-group">
+            <input type="radio" id="q4-1" name="best_time" value="아침"><label for="q4-1" class="option-box">🌞 아침</label>
+            <input type="radio" id="q4-2" name="best_time" value="낮"><label for="q4-2" class="option-box">☀️ 낮</label>
+            <input type="radio" id="q4-3" name="best_time" value="저녁"><label for="q4-3" class="option-box">🌇 저녁</label>
+            <input type="radio" id="q4-4" name="best_time" value="밤 / 새벽"><label for="q4-4" class="option-box">🌙 밤 / 새벽</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>5️⃣ 스트레스 해소에 도움이 된다고 느끼는 콘텐츠나 서비스는 무엇인가요? (복수선택 가능)</label>
+          <div class="checkbox-group" id="q5-checkbox-group">
+            <input type="checkbox" id="q5-1" name="content_service" value="명상 앱"><label for="q5-1" class="option-box">🪷 명상 앱</label>
+            <input type="checkbox" id="q5-2" name="content_service" value="힐링 음악 / ASMR"><label for="q5-2" class="option-box">🎧 힐링 음악 / ASMR</label>
+            <input type="checkbox" id="q5-3" name="content_service" value="유튜브 / OTT 콘텐츠"><label for="q5-3" class="option-box">📺 유튜브 / OTT 콘텐츠</label>
+            <input type="checkbox" id="q5-4" name="content_service" value="SNS / 커뮤니티 활동"><label for="q5-4" class="option-box">💬 SNS / 커뮤니티 활동</label>
+            <input type="checkbox" id="q5-5" name="content_service" value="취미 관련 콘텐츠"><label for="q5-5" class="option-box">🎨 취미 관련 콘텐츠</label>
+            <input type="checkbox" id="q5-6" name="content_service" value="기타" data-etc-input="q5-etc"><label for="q5-6" class="option-box">✏️ 기타</label>
+          </div>
+          <input type="text" id="q5-etc" name="content_service_etc" placeholder="기타를 선택했다면 입력해주세요 (선택)" class="etc-input">
         </div>
 
         <div class="form-group last">
-          <label>5️⃣ 본인만의 특별한 스트레스 해소 방법이 있다면 알려주세요</label>
+          <label>6️⃣ 본인만의 특별한 스트레스 해소 방법이 있다면 알려주세요</label>
           <textarea name="special_method" id="special_method" rows="2" placeholder="예) 일기장에 솔직하게 마음 털어놓기"></textarea>
         </div>
 
@@ -90,27 +101,32 @@
       </p>
 
       <div class="chart-container">
-        <h4>Q1. 스트레스를 느끼는 상황</h4>
+        <h4>Q1. 현재 스트레스 수준</h4>
         <canvas id="chart-q1"></canvas>
       </div>
 
       <div class="chart-container">
-        <h4>Q2. 스트레스를 해소하기 위해 하는 행동</h4>
+        <h4>Q2. 스트레스를 느끼는 상황</h4>
         <canvas id="chart-q2"></canvas>
       </div>
 
       <div class="chart-container">
-        <h4>Q3. 스트레스를 풀기 좋은 시간대</h4>
+        <h4>Q3. 스트레스를 해소하기 위해 하는 행동</h4>
         <canvas id="chart-q3"></canvas>
       </div>
 
       <div class="chart-container">
-        <h4>Q4. 스트레스 해소 콘텐츠/서비스</h4>
+        <h4>Q4. 스트레스를 풀기 좋은 시간대</h4>
         <canvas id="chart-q4"></canvas>
       </div>
 
       <div class="chart-container">
-        <h4>Q5. 특별한 스트레스 해소 방법 팁</h4>
+        <h4>Q5. 스트레스 해소 콘텐츠/서비스</h4>
+        <canvas id="chart-q5"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h4>Q6. 특별한 스트레스 해소 방법 팁</h4>
         <ul id="special-methods-list" class="special-methods-list">
             <li>아직 제출된 답변이 없습니다.</li>
         </ul>
