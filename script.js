@@ -1,105 +1,268 @@
-// 스프레드시트 ID와 시트 이름 설정
-const SPREADSHEET_ID = '1HFTxzek8UdqEKwhpryfqXsx09vlDI1Mnjx_edrf7veI';
-const SHEET_NAME = 'responses';
+// =======================
+// 설정 (여기만 바꿔주세요)
+// =======================
+// 배포한 Google Apps Script 웹앱 URL (doGet/doPost 처리)
+// 🚨🚨🚨 배포 관리에서 새로 생성된 URL을 여기에 붙여넣어야 합니다. 🚨🚨🚨
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw3M0k4ScnC5nuvf0BdF8Xj0KLF358L1AE9uIqRM3TpQntosa4S7sZ9yzbcUGNOKiTOiw/exec";
+// =======================
 
-// POST 요청 처리 (설문 제출)
-function doPost(e) {
+let charts = {};
+// 차트 색상 설정
+const CHART_COLORS = [
+  '#26a69a','#80cbc4','#b2dfdb','#4db6ac','#009688',
+  '#00897b','#00796b','#00695c','#4dd0e1','#00bcd4'
+];
+
+/**
+ * 탭 전환
+ */
+function showTab(tabName, updateChart=false) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const targetTab = document.getElementById(tabName);
+  const targetNav = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
+  if (targetTab && targetNav) {
+    targetTab.classList.add('active');
+    targetNav.classList.add('active');
+  }
+  if (updateChart) updateStatisticsTab();
+}
+
+/**
+ * 기타 입력 필드 토글 설정
+ */
+function setupEtcToggle() {
+  document.querySelectorAll('input[type="checkbox"][data-etc-input]').forEach(checkbox => {
+    const etcInputId = checkbox.getAttribute('data-etc-input');
+    const etcInput = document.getElementById(etcInputId);
+    // 초기 상태 설정
+    if (checkbox.checked) etcInput.classList.add('visible');
+
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        etcInput.classList.add('visible');
+        etcInput.focus();
+      } else {
+        etcInput.classList.remove('visible');
+        etcInput.value = '';
+      }
+    });
+  });
+}
+
+/**
+ * Q1 선택 제한 (최대 2개)
+ */
+function setupQ1Limit(maxChecked = 2) {
+  const q1Group = document.getElementById('q1-checkbox-group');
+  // 'q1-checkbox-group' ID가 없으면 동작하지 않습니다. (HTML ID 확인 필요)
+  if (!q1Group) return; 
+
+  const checkboxes = q1Group.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const checkedCount = [...checkboxes].filter(c => c.checked).length;
+      if (checkedCount > maxChecked) {
+        e.target.checked = false;
+        alert(`✅ 이 질문은 최대 ${maxChecked}개까지만 선택할 수 있습니다.`);
+        // 기타 입력창이 체크된 항목의 등일경우 초기화
+        const etcId = e.target.getAttribute('data-etc-input');
+        if (etcId) {
+          const el = document.getElementById(etcId);
+          el.classList.remove('visible');
+          el.value = '';
+        }
+      }
+    });
+  });
+}
+
+/**
+ * 폼 데이터 수집 -> GAS 서버가 기대하는 JSON 형식으로 변환
+ */
+function collectFormData(formEl) {
+  const fd = new FormData(formEl);
+  // FormData에서 해당 이름의 모든 값을 배열로 가져와서 trim 후 빈 값 제거
+  const toArray = (name) => fd.getAll(name).map(s => s.trim()).filter(Boolean);
+  
+  const record = {};
+  // Q1: 스트레스 상황 (배열)
+  record.stress_situation = toArray('stress_situation');
+  record.stress_situation_etc = (fd.get('stress_situation_etc') || '').trim();
+  // Q2: 스트레스 해소 행동 (배열)
+  record.stress_action = toArray('stress_action');
+  record.stress_action_etc = (fd.get('stress_action_etc') || '').trim();
+  // Q3: 스트레스 풀기 좋은 시간대 (단일 값)
+  record.best_time = fd.get('best_time') || '';
+  // Q4: 콘텐츠 서비스 (배열)
+  record.content_service = toArray('content_service');
+  record.content_service_etc = (fd.get('content_service_etc') || '').trim();
+  // Q5: 특별한 해소 방법 (주관식)
+  record.special_method = (fd.get('special_method') || '').trim();
+  
+  return record;
+}
+
+/**
+ * 폼 제출 데이터를 Apps Script에 POST 요청
+ */
+async function postToGAS(payload) {
   try {
-    const json = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    let sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-      sheet.appendRow([
-        'timestamp',
-        'stress_situation', 'stress_situation_etc',
-        'stress_action', 'stress_action_etc',
-        'best_time',
-        'content_service', 'content_service_etc',
-        'special_method'
-      ]);
-    }
-
-    const timestamp = new Date().toISOString();
-    const row = [
-      timestamp,
-      (json.stress_situation || []).join('|'),
-      json.stress_situation_etc || '',
-      (json.stress_action || []).join('|'),
-      json.stress_action_etc || '',
-      json.best_time || '',
-      (json.content_service || []).join('|'),
-      json.content_service_etc || '',
-      json.special_method || ''
-    ];
-    sheet.appendRow(row);
-
-    return jsonResponse({ result: 'success', message: 'Saved' });
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      // CORS 문제 해결을 위해 Content-Type 명시 (Apps Script에서 JSON.parse를 위해 필수)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'cors'
+    });
+    // Apps Script가 JSON 응답을 반환할 때만 .json()으로 파싱 가능
+    return await res.json();
   } catch (err) {
-    return jsonResponse({ result: 'error', message: err.toString() });
+    console.error('GAS post error', err);
+    throw err; // 오류를 다시 던져서 최종 에러 메시지("제출 실패")를 띄우도록 함
   }
 }
 
-// GET 요청 처리 (통계 확인)
-function doGet(e) {
+/**
+ * Apps Script에서 집계된 통계 JSON 데이터 요청
+ */
+async function fetchStatsFromGAS() {
   try {
-    const action = (e.parameter && e.parameter.action) || '';
-    if (action === 'getStats') {
-      const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-      const sheet = ss.getSheetByName(SHEET_NAME);
-      if (!sheet) return jsonResponse({ total:0, q1:{}, q2:{}, q3:{}, q4:{}, q5:[] });
-
-      const values = sheet.getDataRange().getValues();
-      if (values.length <= 1) return jsonResponse({ total:0, q1:{}, q2:{}, q3:{}, q4:{}, q5:[] });
-
-      const rows = values.slice(1);
-      const stats = { q1:{}, q2:{}, q3:{}, q4:{}, q5:[], total: rows.length };
-
-      rows.forEach(r => {
-        const q1Arr = (r[1] || '').toString().split('|').map(s=>s.trim()).filter(Boolean);
-        q1Arr.forEach(v => stats.q1[v]=(stats.q1[v]||0)+1);
-        if(r[2]) stats.q1['✏️ 기타: '+r[2]]=(stats.q1['✏️ 기타: '+r[2]]||0)+1;
-
-        const q2Arr = (r[3] || '').toString().split('|').map(s=>s.trim()).filter(Boolean);
-        q2Arr.forEach(v => stats.q2[v]=(stats.q2[v]||0)+1);
-        if(r[4]) stats.q2['✏️ 기타: '+r[4]]=(stats.q2['✏️ 기타: '+r[4]]||0)+1;
-
-        const best = (r[5]||'').toString().trim();
-        if(best) stats.q3[best]=(stats.q3[best]||0)+1;
-
-        const q4Arr = (r[6]||'').toString().split('|').map(s=>s.trim()).filter(Boolean);
-        q4Arr.forEach(v => stats.q4[v]=(stats.q4[v]||0)+1);
-        if(r[7]) stats.q4['✏️ 기타: '+r[7]]=(stats.q4['✏️ 기타: '+r[7]]||0)+1;
-
-        const special = (r[8]||'').toString().trim();
-        if(special) stats.q5.push(special);
-      });
-
-      return jsonResponse(stats);
-    } else {
-      return jsonResponse({ message:'Use ?action=getStats' });
-    }
-  } catch(err) {
-    return jsonResponse({ error: err.toString() });
+    // GET 요청 시 ?action=getStats 쿼리 파라미터 사용
+    const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET', mode: 'cors' });
+    return await res.json();
+  } catch (err) {
+    console.error('GAS get error', err);
+    throw err;
   }
 }
 
-// OPTIONS 요청 처리 (CORS preflight)
-function doOptions(e) {
-  return ContentService
-    .createTextOutput('')
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin','*')
-    .setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS')
-    .setHeader('Access-Control-Allow-Headers','Content-Type');
+/* --- 차트 렌더링 유틸리티 (생략 가능, 통계 탭을 위해 필요) --- */
+function renderBarChart(canvasId, dataObj, total) {
+  const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
+  const values = labels.map(l => dataObj[l]);
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '응답 수',
+        data: values,
+        backgroundColor: CHART_COLORS.map(c => c + 'b3'),
+        borderColor: CHART_COLORS,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const n = context.parsed.x || 0;
+              return `${n}명 (${ total ? ((n/total)*100).toFixed(1) : 0 }%)`;
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
 }
 
-// JSON 응답 + CORS 헤더 포함
-function jsonResponse(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin','*')
-    .setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS')
-    .setHeader('Access-Control-Allow-Headers','Content-Type');
+function renderPieChart(canvasId, dataObj) {
+  const labels = Object.keys(dataObj);
+  const values = labels.map(l => dataObj[l]);
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'pie',
+    data: { labels, datasets: [{ data: values, backgroundColor: CHART_COLORS, hoverOffset: 4 }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16 } },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed || 0;
+              const total = values.reduce((a,b)=>a+b,0);
+              const pct = total ? ((value/total)*100).toFixed(1) : 0;
+              return `${context.label}: ${value}명 (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
 }
+
+/**
+ * 통계 탭 데이터 로드 및 차트 업데이트
+ */
+async function updateStatisticsTab() {
+  try {
+    const stats = await fetchStatsFromGAS();
+    document.getElementById('total-participants').textContent = stats.total || 0;
+
+    if ((stats.total || 0) === 0) {
+      // 데이터가 없을 때 차트 영역 초기화 로직 (생략)
+      document.getElementById('special-methods-list').innerHTML = '<li>아직 제출된 답변이 없습니다.</li>';
+      return;
+    }
+
+    // Q1, Q2 -> 막대 차트
+    renderBarChart('chart-q1', stats.q1 || {}, stats.total);
+    renderBarChart('chart-q2', stats.q2 || {}, stats.total);
+    // Q3, Q4 -> 파이 차트
+    renderPieChart('chart-q3', stats.q3 || {});
+    renderPieChart('chart-q4', stats.q4 || {});
+    
+    // Q5 리스트 (주관식)
+    const listElement = document.getElementById('special-methods-list');
+    listElement.innerHTML = '';
+    if (Array.isArray(stats.q5) && stats.q5.length) {
+      stats.q5.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        listElement.appendChild(li);
+      });
+    } else {
+      listElement.innerHTML = '<li>제출된 특별한 스트레스 해소 방법이 없습니다.</li>';
+    }
+  } catch (err) {
+    console.error(err);
+    // 통계 로드 시 오류는 서버 연결 문제이므로 사용자에게 알림
+    alert('통계 로드 중 오류가 발생했습니다. Apps Script 배포 상태를 확인하세요.');
+  }
+}
+/* --- 차트 렌더링 유틸리티 끝 --- */
+
+
+/**
+ * 폼 제출 이벤트 핸들러
+ */
+document.getElementById('stress-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const record = collectFormData(form);
+  
+  // 기본 검증: Q1 최소 1개 선택 확인
+  if (!record.stress_situation || record.stress_situation.length === 0) {
+    alert('1번 질문은 최소 1개 이상 선택해야 합니다.');
+    return;
+  }
+  
+  try {
+    const res = await postToGAS(record);
+    
+    // Apps Script의 doPost 함수에서 { result: 'success' }를 기대
+    if (res && res.result === 'success') { 
+      alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
+      form.reset();
