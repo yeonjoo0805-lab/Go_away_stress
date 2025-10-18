@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxrwewOrxYsPX9BevZL3AgONcJs2ufOtV7D1a1jlrkz4K2GuyJB-lbzX-i5lDUJJmtb/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwcA2LRAt9wwWUzBOCYQEByPL_NTbvBrcOs_APULugm8xeXUzOeeSfexNUnbP05Tm29/exec";
 // =======================
 
 let charts = {};
@@ -79,24 +79,64 @@ function collectFormData(formEl) {
   return record;
 }
 
-async function postToGAS(payload) {
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      mode: 'cors'
-    });
-    return await res.json();
-  } catch (err) {
-    console.error('GAS post error', err);
-    throw err;
-  }
+// iframe 방식 POST (CORS 우회)
+function postToGAS(payload) {
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'hiddenFrame';
+    document.body.appendChild(iframe);
+    
+    const form = document.createElement('form');
+    form.target = 'hiddenFrame';
+    form.method = 'POST';
+    form.action = GAS_URL;
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    
+    document.body.appendChild(form);
+    
+    // 응답 수신
+    const messageHandler = (event) => {
+      if (event.data && event.data.result) {
+        window.removeEventListener('message', messageHandler);
+        
+        try {
+          document.body.removeChild(form);
+          document.body.removeChild(iframe);
+        } catch(e) {}
+        
+        if (event.data.result === 'success') {
+          resolve(event.data);
+        } else {
+          reject(event.data);
+        }
+      }
+    };
+    
+    window.addEventListener('message', messageHandler);
+    
+    // 타임아웃 (10초)
+    setTimeout(() => {
+      window.removeEventListener('message', messageHandler);
+      try {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+      } catch(e) {}
+      reject({ result: 'error', message: '시간 초과' });
+    }, 10000);
+    
+    form.submit();
+  });
 }
 
 async function fetchStatsFromGAS() {
   try {
-    const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET', mode: 'cors' });
+    const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET' });
     return await res.json();
   } catch (err) {
     console.error('GAS get error', err);
@@ -197,7 +237,7 @@ async function updateStatisticsTab() {
     }
   } catch (err) {
     console.error(err);
-    alert('통계 로드 중 오류가 발생했습니다. Apps Script 배포 상태를 확인하세요.');
+    alert('통계 로드 중 오류가 발생했습니다.');
   }
 }
 
@@ -217,17 +257,12 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   
   try {
     const res = await postToGAS(record);
-    
-    if (res && res.result === 'success') { 
-      alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
-      form.reset();
-      showTab('stats', true);
-    } else {
-      alert('제출 중 문제가 발생했습니다. 다시 시도해주세요.');
-    }
+    alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
+    form.reset();
+    showTab('stats', true);
   } catch (err) {
     console.error('제출 오류:', err);
-    alert('제출 실패: 서버 연결을 확인해주세요.');
+    alert('제출 실패: ' + (err.message || '다시 시도해주세요'));
   } finally {
     btn.disabled = false;
     btn.textContent = '✅ 설문 제출하기';
