@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwcA2LRAt9wwWUzBOCYQEByPL_NTbvBrcOs_APULugm8xeXUzOeeSfexNUnbP05Tm29/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwcA2LRAt9wwWUzBOCYQEByPL_NTbvBrcOs_APULugm8xeXUzOeeSfexNUnbP05Tm29/exec"; // 본인의 GAS URL로 설정하세요
 // =======================
 
 let charts = {};
@@ -241,6 +241,9 @@ async function updateStatisticsTab() {
   }
 }
 
+// ==================================================
+// (수정된 부분) "await" 및 "try/catch" 제거
+// ==================================================
 document.getElementById('stress-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -255,19 +258,28 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   btn.disabled = true;
   btn.textContent = '제출 중...';
   
-  try {
-    const res = await postToGAS(record);
-    alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
-    form.reset();
-    showTab('stats', true);
-  } catch (err) {
-    console.error('제출 오류:', err);
-    alert('제출 실패: ' + (err.message || '다시 시도해주세요'));
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✅ 설문 제출하기';
-  }
+  // 1. "Fire-and-forget": GAS로 전송 요청을 보내되, 응답을 기다리지 않습니다.
+  postToGAS(record)
+    .then(() => {
+      // (데이터 전송 및 응답 수신 모두 성공한 경우 - 콘솔에만 기록)
+      console.log("GAS 응답 수신 성공.");
+    })
+    .catch(err => {
+      // (응답 수신에 실패한 경우(시간 초과) - 콘솔에만 기록)
+      // 이미 데이터는 시트로 넘어갔을 확률이 높습니다.
+      console.warn("GAS 응답 수신 실패 (데이터는 전송되었을 수 있음):", err.message);
+    });
+
+  // 2. 응답을 기다리지 않고 *즉시* 성공 알림과 화면 전환을 실행합니다.
+  alert('🌿 설문이 제출되었습니다. 참여해주셔서 감사합니다!');
+  form.reset();
+  showTab('stats', true); // <-- 통계 탭으로 바로 이동
+
+  // 3. 버튼 상태를 원래대로 복구합니다.
+  btn.disabled = false;
+  btn.textContent = '✅ 설문 제출하기';
 });
+// ==================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   setupEtcToggle();
