@@ -27,7 +27,7 @@ function showTab(tabName, updateChart = false) {
 }
 
 /**
- * ✅ 최종 FIX: iframe/postMessage 통신 로직 (타이밍 문제 해결)
+ * ✅ 최종 FIX: SecurityError를 유발하는 코드 제거 및 50ms 지연 도입으로 통신 안정화
  */
 function postToGAS(formData) {
   return new Promise((resolve, reject) => {
@@ -35,7 +35,7 @@ function postToGAS(formData) {
     iframe.style.display = "none";
     iframe.src = GAS_URL; 
     
-    // 통신 타임아웃 설정: 10초 내에 응답이 없으면 실패 처리
+    // 통신 타임아웃 설정: 10초
     const timeout = setTimeout(() => {
         window.removeEventListener("message", handler);
         document.body.removeChild(iframe);
@@ -44,7 +44,6 @@ function postToGAS(formData) {
 
     // ✅ 응답 수신 리스너 
     window.addEventListener("message", function handler(event) {
-        // 성공 응답 또는 오류 응답 수신 시 처리
         if (event.data && (event.data.result === 'success' || event.data.result === 'error')) {
             clearTimeout(timeout); 
             window.removeEventListener("message", handler);
@@ -61,12 +60,12 @@ function postToGAS(formData) {
 
     document.body.appendChild(iframe);
 
-    // ✅ 최종 수정: iframe의 내부 콘텐츠(Apps Script)가 완전히 로드된 후 postMessage를 보냅니다.
+    // ✅ 최종 수정 핵심: iframe 로드 후 **50ms의 아주 짧은 지연**을 주어 Apps Script의 내부 보안(Warden)이 준비될 시간을 줍니다.
     iframe.onload = () => {
-        // iframe 내부 문서의 'load' 이벤트 리스너를 추가하여, iframe 내부 HTML이 완전히 로드된 시점을 잡습니다.
-        iframe.contentWindow.addEventListener('load', () => {
+        setTimeout(() => {
+            // 이 시점에는 postMessage를 통한 데이터 전송만 안전하게 허용됩니다.
             iframe.contentWindow.postMessage(formData, "*");
-        });
+        }, 50); // 50밀리초 지연
     };
   });
 }
