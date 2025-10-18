@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwcA2LRAt9wwWUzBOCYQEByPL_NTbvBrcOs_APULugm8xeXUzOeeSfexNUnbP05Tm29/exec"; // 본인의 GAS URL로 설정하세요
+const GAS_URL = "https://script.google.com/macros/s/AKfycby5hgGXX2lqPuyXq1R8ApNKZiAMkHIFKx1VcVPYsMS7zRq_Nw5wnw1wAu4gqM2odb9X/exec"; // 본인의 GAS URL로 설정하세요
 // =======================
 
 let charts = {};
@@ -40,11 +40,12 @@ function setupEtcToggle() {
   });
 }
 
-function setupQ1Limit(maxChecked = 2) {
-  const q1Group = document.getElementById('q1-checkbox-group');
-  if (!q1Group) return; 
+// (수정) 함수 이름 Q1 -> Q2, ID값 q1 -> q2
+function setupQ2Limit(maxChecked = 2) {
+  const q2Group = document.getElementById('q2-checkbox-group');
+  if (!q2Group) return; 
 
-  const checkboxes = q1Group.querySelectorAll('input[type="checkbox"]');
+  const checkboxes = q2Group.querySelectorAll('input[type="checkbox"]');
   checkboxes.forEach(cb => {
     cb.addEventListener('change', (e) => {
       const checkedCount = [...checkboxes].filter(c => c.checked).length;
@@ -67,6 +68,7 @@ function collectFormData(formEl) {
   const toArray = (name) => fd.getAll(name).map(s => s.trim()).filter(Boolean);
   
   const record = {};
+  record.stress_level = fd.get('stress_level') || ''; // (수정) 새 Q1 문항 추가
   record.stress_situation = toArray('stress_situation');
   record.stress_situation_etc = (fd.get('stress_situation_etc') || '').trim();
   record.stress_action = toArray('stress_action');
@@ -145,8 +147,16 @@ async function fetchStatsFromGAS() {
 }
 
 function renderBarChart(canvasId, dataObj, total) {
-  const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
-  const values = labels.map(l => dataObj[l]);
+  // (수정) Q1(스트레스 수준) 데이터는 점수 순서대로 정렬
+  let labels, values;
+  if (canvasId === 'chart-q1') {
+      labels = Object.keys(dataObj).sort(); // "1점", "2점"... 순으로 정렬
+      values = labels.map(l => dataObj[l]);
+  } else {
+      labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
+      values = labels.map(l => dataObj[l]);
+  }
+
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId).getContext('2d');
   charts[canvasId] = new Chart(ctx, {
@@ -182,8 +192,16 @@ function renderBarChart(canvasId, dataObj, total) {
 }
 
 function renderPieChart(canvasId, dataObj) {
-  const labels = Object.keys(dataObj);
-  const values = labels.map(l => dataObj[l]);
+  // (수정) Q1(스트레스 수준) 데이터는 점수 순서대로 정렬
+  let labels, values;
+  if (canvasId === 'chart-q1') {
+      labels = Object.keys(dataObj).sort(); // "1점", "2점"... 순으로 정렬
+      values = labels.map(l => dataObj[l]);
+  } else {
+      labels = Object.keys(dataObj);
+      values = labels.map(l => dataObj[l]);
+  }
+
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId).getContext('2d');
   charts[canvasId] = new Chart(ctx, {
@@ -219,15 +237,18 @@ async function updateStatisticsTab() {
       return;
     }
 
-    renderBarChart('chart-q1', stats.q1 || {}, stats.total);
-    renderBarChart('chart-q2', stats.q2 || {}, stats.total);
-    renderPieChart('chart-q3', stats.q3 || {});
-    renderPieChart('chart-q4', stats.q4 || {});
+    // (수정) 차트 렌더링 순서 및 ID 변경
+    renderPieChart('chart-q1', stats.q1 || {});       // 새 Q1 (Pie)
+    renderBarChart('chart-q2', stats.q2 || {}, stats.total); // 기존 Q1 -> Q2 (Bar)
+    renderBarChart('chart-q3', stats.q3 || {}, stats.total); // 기존 Q2 -> Q3 (Bar)
+    renderPieChart('chart-q4', stats.q4 || {});       // 기존 Q3 -> Q4 (Pie)
+    renderPieChart('chart-q5', stats.q5 || {});       // 기존 Q4 -> Q5 (Pie)
     
     const listElement = document.getElementById('special-methods-list');
     listElement.innerHTML = '';
-    if (Array.isArray(stats.q5) && stats.q5.length) {
-      stats.q5.forEach(m => {
+    // (수정) 기존 Q5 -> Q6
+    if (Array.isArray(stats.q6) && stats.q6.length) {
+      stats.q6.forEach(m => {
         const li = document.createElement('li');
         li.textContent = m;
         listElement.appendChild(li);
@@ -249,8 +270,15 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   const form = e.target;
   const record = collectFormData(form);
   
+  // (수정) 새 Q1 필수 응답 체크
+  if (!record.stress_level) {
+    alert('1번 질문(스트레스 수준)에 응답해주세요.');
+    return;
+  }
+  
+  // (수정) 기존 Q1 -> Q2 필수 응답 체크
   if (!record.stress_situation || record.stress_situation.length === 0) {
-    alert('1번 질문은 최소 1개 이상 선택해야 합니다.');
+    alert('2번 질문(스트레스 상황)은 최소 1개 이상 선택해야 합니다.');
     return;
   }
   
@@ -283,5 +311,5 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   setupEtcToggle();
-  setupQ1Limit(2);
+  setupQ2Limit(2); // (수정) Q1 -> Q2
 });
