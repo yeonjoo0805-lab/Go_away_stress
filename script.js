@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 [필수!] 이전에 [새 배포] 후 받은 새 URL을 그대로 사용하세요.
+// 🚨 [필수!] Code.gs를 [새 배포] 한 후 받은 URL을 여기에 붙여넣으세요.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxXs82XJp-Le88-_9g-aikQIaojRA56b9a9qhh20okZVLOjxotTkkIsWW4JqbGVomoi0A/exec"; 
 // =======================
 
@@ -155,7 +155,7 @@ function collectFormData(formEl) {
   return record;
 }
 
-/* --- ✅ [수정] 차트 렌더링 (괄호 오류 수정) --- */
+/* --- ✅ [오류 수정] 차트 렌더링 (괄호 오류가 없던 버전) --- */
 function renderBarChart(canvasId, dataObj, total) {
   const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
   const values = labels.map(l => dataObj[l]);
