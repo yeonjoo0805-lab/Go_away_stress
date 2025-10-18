@@ -1,8 +1,8 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 [필수!] Code.gs를 [새 배포] 한 후 받은 URL을 여기에 붙여넣으세요.
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxXs82XJp-Le88-_9g-aikQIaojRA56b9a9qhh20okZVLOjxotTkkIsWW4JqbGVomoi0A/exec"; 
+// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzeLllbDzauUzRJhD6XR0u9N9G2doJ_8_Y-39k5GN_wyjEhuRmAt-3moKhiDeDwv1nJeQ/exec"; 
 // =======================
 
 let charts = {};
@@ -87,10 +87,11 @@ function postToGAS(formData) {
 }
 
 /**
- * 통계 데이터를 가져오는 함수 (수정 없음)
+ * ✅ [수정] 통계 데이터를 가져오는 함수 ( /dev URL 버그 수정)
  */
 async function fetchStatsFromGAS() {
   try {
+    // '/dev' URL 대신 '/exec' URL (GAS_URL)을 직접 사용해야 합니다.
     const res = await fetch(GAS_URL + '?action=getStats', { method: 'GET' });
     if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -101,6 +102,7 @@ async function fetchStatsFromGAS() {
     throw err;
   }
 }
+
 
 /* --- 폼 유틸리티 (수정 없음) --- */
 function setupEtcToggle() {
@@ -155,12 +157,12 @@ function collectFormData(formEl) {
   return record;
 }
 
-/* --- ✅ [오류 수정] 차트 렌더링 (괄호 오류가 없던 버전) --- */
+/* --- 차트 렌더링 (수정 없음) --- */
 function renderBarChart(canvasId, dataObj, total) {
   const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
   const values = labels.map(l => dataObj[l]);
   if (charts[canvasId]) charts[canvasId].destroy();
-  const ctx = document.getElementById(canvasId).getContext('2d');
+  const ctx = document.getElementById(canvasId).getContext('D');
   charts[canvasId] = new Chart(ctx, {
     type: 'bar', 
     data: { 
