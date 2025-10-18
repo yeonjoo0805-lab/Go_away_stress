@@ -1,14 +1,14 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 [필수!] 이전에 [새 배포] 후 받은 새 URL을 그대로 사용하세요.
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyzV_z_pgfiVsqZVdlG24k_WNpIoXEgYEWTO2TeD0Y38n2dPQvlvKyWl2qZ6Asiv8n1jA/exec"; 
+// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxXs82XJp-Le88-_9g-aikQIaojRA56b9a9qhh20okZVLOjxotTkkIsWW4JqbGVomoi0A/exec"; 
 // =======================
 
 let charts = {};
 const CHART_COLORS = [
   '#26a69a','#80cbc4','#b2dfdb','#4db6ac','#009688',
-  '#00796b','#00796b','#00695c','#4dd0e1','#00bcd4'
+  '#00897b','#00695c','#4dd0e1','#00bcd4'
 ];
 
 /**
@@ -27,8 +27,7 @@ function showTab(tabName, updateChart = false) {
 }
 
 /**
- * ✅ [버그 수정] postToGAS 함수 (핸드셰이크 방식)
- * 'handler'가 정의되기 전에 'setTimeout'에서 참조되던 'ReferenceError'를 수정했습니다.
+ * ✅ [최종본] postToGAS 함수 (핸드셰이크 + ReferenceError 버그 수정)
  */
 function postToGAS(formData) {
   return new Promise((resolve, reject) => {
@@ -39,7 +38,7 @@ function postToGAS(formData) {
     let timeout; // 타임아웃 변수 선언
     let handler; // 핸들러 변수 선언
 
-    // ✅ [수정] 핸들러 함수를 먼저 정의합니다.
+    // 핸들러 함수를 먼저 정의합니다.
     handler = function(event) {
         // GAS (google.com)에서 온 메시지만 처리
         if (!(event.origin.includes('google.com') || event.origin.includes('googleusercontent.com'))) {
@@ -77,7 +76,7 @@ function postToGAS(formData) {
         }
     };
     
-    // ✅ [수정] 핸들러가 정의된 후에 타임아웃을 설정합니다.
+    // 핸들러가 정의된 후에 타임아웃을 설정합니다.
     timeout = setTimeout(() => {
         window.removeEventListener("message", handler); // 이제 'handler'를 찾을 수 있습니다.
         try { document.body.removeChild(iframe); } catch(e) {}
