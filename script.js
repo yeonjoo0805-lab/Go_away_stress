@@ -48,7 +48,7 @@ function postToGAS(formData) {
       // iframe에서 준비 완료 신호 수신
       if (data.status === "iframe_ready") {
         try {
-          iframe.contentWindow.postMessage({ formData }, "*");
+          iframe.contentWindow.postMessage( formData , "*");
         } catch (err) {
           responded = true;
           cleanup();
