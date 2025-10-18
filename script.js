@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-// 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
+// 🚨 [필수!] 이전에 [새 배포] 후 받은 새 URL을 그대로 사용하세요.
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxXs82XJp-Le88-_9g-aikQIaojRA56b9a9qhh20okZVLOjxotTkkIsWW4JqbGVomoi0A/exec"; 
 // =======================
 
@@ -40,17 +40,12 @@ function postToGAS(formData) {
 
     // 핸들러 함수를 먼저 정의합니다.
     handler = function(event) {
-        // GAS (google.com)에서 온 메시지만 처리
         if (!(event.origin.includes('google.com') || event.origin.includes('googleusercontent.com'))) {
             return;
         }
-
         const data = event.data;
-
-        // 1. iframe이 "준비 완료" 신호를 보냈을 때
         if (data && data.status === 'iframe_ready') {
             try {
-                // 2. 폼 데이터를 iframe으로 전송합니다.
                 iframe.contentWindow.postMessage({ formData: formData }, "*");
             } catch (e) {
                 clearTimeout(timeout);
@@ -58,16 +53,12 @@ function postToGAS(formData) {
                 try { document.body.removeChild(iframe); } catch(e2) {}
                 reject({ result: 'error', message: `postMessage 실패: ${e.message}` });
             }
-            return; // 최종 응답을 기다립니다.
+            return; 
         }
-
-        // 3. iframe이 'doPostLogic'의 최종 응답을 보냈을 때
         if (data && (data.result === 'success' || data.result === 'error')) {
-            // 4. 프로미스를 완료하고 모든 것을 정리합니다.
             clearTimeout(timeout); 
             window.removeEventListener("message", handler);
             try { document.body.removeChild(iframe); } catch(e) {}
-            
             if (data.result === 'success') {
                 resolve(data);
             } else {
@@ -78,18 +69,14 @@ function postToGAS(formData) {
     
     // 핸들러가 정의된 후에 타임아웃을 설정합니다.
     timeout = setTimeout(() => {
-        window.removeEventListener("message", handler); // 이제 'handler'를 찾을 수 있습니다.
+        window.removeEventListener("message", handler);
         try { document.body.removeChild(iframe); } catch(e) {}
         reject({result: 'error', message: "서버 응답 시간 초과 (15초). Apps Script 배포를 확인하세요."});
     }, 15000); 
 
-    // 메시지 리스너 등록
     window.addEventListener("message", handler);
-
-    // iframe 로드 시작
     document.body.appendChild(iframe);
 
-    // iframe 로드 자체 실패 시
     iframe.onerror = (e) => {
         clearTimeout(timeout);
         window.removeEventListener("message", handler);
@@ -168,29 +155,79 @@ function collectFormData(formEl) {
   return record;
 }
 
-/* --- 차트 렌더링 (수정 없음) --- */
+/* --- ✅ [수정] 차트 렌더링 (괄호 오류 수정) --- */
 function renderBarChart(canvasId, dataObj, total) {
   const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
   const values = labels.map(l => dataObj[l]);
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId).getContext('2d');
   charts[canvasId] = new Chart(ctx, {
-    type: 'bar', data: { labels, datasets: [{ label: '응답 수', data: values, backgroundColor: CHART_COLORS.map(c => c + 'b3'), borderColor: CHART_COLORS, borderWidth: 1 }] },
-    options: { responsive: true, maintainAspectRatio: true, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.x}명 (${ total ? ((c.parsed.x/total)*100).toFixed(1) : 0 }%)` } } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+    type: 'bar', 
+    data: { 
+      labels, 
+      datasets: [{ 
+        label: '응답 수', 
+        data: values, 
+        backgroundColor: CHART_COLORS.map(c => c + 'b3'), 
+        borderColor: CHART_COLORS, 
+        borderWidth: 1 
+      }] 
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const n = context.parsed.x || 0;
+              return `${n}명 (${ total ? ((n/total)*100).toFixed(1) : 0 }%)`;
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
     }
   });
 }
+
 function renderPieChart(canvasId, dataObj) {
   const labels = Object.keys(dataObj);
   const values = labels.map(l => dataObj[l]);
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId).getContext('2d');
   charts[canvasId] = new Chart(ctx, {
-    type: 'pie', data: { labels, datasets: [{ data: values, backgroundColor: CHART_COLORS, hoverOffset: 4 }] },
-    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { padding: 16 } }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.parsed}명 (${((c.parsed/values.reduce((a,b)=>a+b,0))*100).toFixed(1)}%)` } } } }
+    type: 'pie', 
+    data: { 
+      labels, 
+      datasets: [{ 
+        data: values, 
+        backgroundColor: CHART_COLORS, 
+        hoverOffset: 4 
+      }] 
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16 } },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed || 0;
+              const total = values.reduce((a,b)=>a+b,0);
+              const pct = total ? ((value/total)*100).toFixed(1) : 0;
+              return `${context.label}: ${value}명 (${pct}%)`;
+            }
+          }
+        }
+      }
     }
   });
 }
+
 async function updateStatisticsTab() {
   try {
     const stats = await fetchStatsFromGAS();
@@ -212,6 +249,7 @@ async function updateStatisticsTab() {
     }
   } catch (err) { console.error(err); alert('통계 로드 중 오류가 발생했습니다. Apps Script 배포 상태를 확인하세요.'); }
 }
+
 
 /**
  * 폼 제출 이벤트 핸들러 (수정 없음)
