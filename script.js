@@ -1,7 +1,7 @@
 // =======================
 // 설정 (여기만 바꿔주세요)
 // =======================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwNNhVG0kqzBiLaP9Ry1GcSIIZhjB9ytc-yQf4yC8g2c1Lz6dOa11xz08-hYcl__VPx/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwco5_WtdVHelmVs1D7DchhGEzG0DFoS1mQc7F0o4yAuFgJTZet0hHVipFY5LvAdiu6/exec";
 // =======================
 
 let charts = {};
