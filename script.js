@@ -2,7 +2,8 @@
 // 설정 (여기만 바꿔주세요)
 // =======================
 // 🚨 [필수!] 아래 URL을 [새 배포] 후 받은 새 URL로 교체해야 합니다.
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzeLllbDzauUzRJhD6XR0u9N9G2doJ_8_Y-39k5GN_wyjEhuRmAt-3moKhiDeDwv1nJeQ/exec"; 
+// ✅ [수정] URL 끝에 있던 보이지 않는 공백 문자를 제거했습니다.
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzeLllbDzauUzRJhD6XR0u9N9G2doJ_8_Y-39k5GN_wyjEhuRmAt-3moKhiDeDwv1nJeQ/exec";
 // =======================
 
 let charts = {};
@@ -162,7 +163,8 @@ function renderBarChart(canvasId, dataObj, total) {
   const labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
   const values = labels.map(l => dataObj[l]);
   if (charts[canvasId]) charts[canvasId].destroy();
-  const ctx = document.getElementById(canvasId).getContext('D');
+  // ✅ [수정] 'D' 오타를 '2d'로 변경
+  const ctx = document.getElementById(canvasId).getContext('2d'); 
   charts[canvasId] = new Chart(ctx, {
     type: 'bar', 
     data: { 
