@@ -2,7 +2,7 @@
 // 설정 (여기만 바꿔주세요)
 // =======================
 // 배포한 Google Apps Script 웹앱 URL (doGet/doPost 처리)
-const GAS_URL = "https://script.google.com/macros/library/d/1yqcUOaZW57R1HvUZfYlfZpU2IDfQXCXdBLk81KcQr6YK9sj7y-gRyjYG/1";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwhQwFB3PKTSbRFntVOokZ17Dk4uBCFcU5gFMd2u_dN79e_54m9g8sweA8rXjX3CyNu8A/exec";
 // =======================
 
 let charts = {};
