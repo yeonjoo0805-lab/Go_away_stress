@@ -61,9 +61,12 @@ function postToGAS(formData) {
 
     document.body.appendChild(iframe);
 
-    // ✅ 데이터 전달: iframe이 완전히 로드된 시점에 바로 데이터를 보냅니다. (setTimeout 제거)
+    // ✅ 최종 수정: iframe의 내부 콘텐츠(Apps Script)가 완전히 로드된 후 postMessage를 보냅니다.
     iframe.onload = () => {
-        iframe.contentWindow.postMessage(formData, "*");
+        // iframe 내부 문서의 'load' 이벤트 리스너를 추가하여, iframe 내부 HTML이 완전히 로드된 시점을 잡습니다.
+        iframe.contentWindow.addEventListener('load', () => {
+            iframe.contentWindow.postMessage(formData, "*");
+        });
     };
   });
 }
@@ -74,7 +77,6 @@ function postToGAS(formData) {
 async function fetchStatsFromGAS() {
   try {
     // getStats 함수는 ContentService.MimeType.JSON을 사용하므로 fetch 사용 가능합니다.
-    // Apps Script의 /exec URL 대신, 통계 데이터 로드 시에는 CORS를 우회하는 /dev URL을 사용하여 안정성을 높입니다.
     const devUrl = GAS_URL.replace('/exec', '/dev'); 
     const res = await fetch(devUrl + '?action=getStats', { method: 'GET' });
     if (!res.ok) {
