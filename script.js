@@ -40,7 +40,6 @@ function setupEtcToggle() {
   });
 }
 
-// (수정) 함수 이름 Q1 -> Q2, ID값 q1 -> q2
 function setupQ2Limit(maxChecked = 2) {
   const q2Group = document.getElementById('q2-checkbox-group');
   if (!q2Group) return; 
@@ -68,7 +67,7 @@ function collectFormData(formEl) {
   const toArray = (name) => fd.getAll(name).map(s => s.trim()).filter(Boolean);
   
   const record = {};
-  record.stress_level = fd.get('stress_level') || ''; // (수정) 새 Q1 문항 추가
+  record.stress_level = fd.get('stress_level') || ''; 
   record.stress_situation = toArray('stress_situation');
   record.stress_situation_etc = (fd.get('stress_situation_etc') || '').trim();
   record.stress_action = toArray('stress_action');
@@ -147,12 +146,13 @@ async function fetchStatsFromGAS() {
 }
 
 function renderBarChart(canvasId, dataObj, total) {
-  // (수정) Q1(스트레스 수준) 데이터는 점수 순서대로 정렬
+  // Q1(스트레스 수준) 데이터는 점수(key) 순서대로 정렬
   let labels, values;
   if (canvasId === 'chart-q1') {
       labels = Object.keys(dataObj).sort(); // "1점", "2점"... 순으로 정렬
       values = labels.map(l => dataObj[l]);
   } else {
+      // 다른 차트들은 응답 수(value)가 많은 순서대로 정렬
       labels = Object.keys(dataObj).sort((a,b)=>dataObj[b]-dataObj[a]);
       values = labels.map(l => dataObj[l]);
   }
@@ -191,16 +191,10 @@ function renderBarChart(canvasId, dataObj, total) {
   });
 }
 
+// (수정) Q1 정렬 로직 제거 (더 이상 Pie 차트가 아님)
 function renderPieChart(canvasId, dataObj) {
-  // (수정) Q1(스트레스 수준) 데이터는 점수 순서대로 정렬
-  let labels, values;
-  if (canvasId === 'chart-q1') {
-      labels = Object.keys(dataObj).sort(); // "1점", "2점"... 순으로 정렬
-      values = labels.map(l => dataObj[l]);
-  } else {
-      labels = Object.keys(dataObj);
-      values = labels.map(l => dataObj[l]);
-  }
+  const labels = Object.keys(dataObj);
+  const values = labels.map(l => dataObj[l]);
 
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId).getContext('2d');
@@ -237,16 +231,19 @@ async function updateStatisticsTab() {
       return;
     }
 
-    // (수정) 차트 렌더링 순서 및 ID 변경
-    renderPieChart('chart-q1', stats.q1 || {});       // 새 Q1 (Pie)
-    renderBarChart('chart-q2', stats.q2 || {}, stats.total); // 기존 Q1 -> Q2 (Bar)
-    renderBarChart('chart-q3', stats.q3 || {}, stats.total); // 기존 Q2 -> Q3 (Bar)
-    renderPieChart('chart-q4', stats.q4 || {});       // 기존 Q3 -> Q4 (Pie)
-    renderPieChart('chart-q5', stats.q5 || {});       // 기존 Q4 -> Q5 (Pie)
+    // ===================================
+    // (수정) Q1과 Q5를 renderBarChart로 변경
+    // ===================================
+    renderBarChart('chart-q1', stats.q1 || {}, stats.total); // 새 Q1 (Bar)
+    renderBarChart('chart-q2', stats.q2 || {}, stats.total); // Q2 (Bar)
+    renderBarChart('chart-q3', stats.q3 || {}, stats.total); // Q3 (Bar)
+    renderPieChart('chart-q4', stats.q4 || {});       // Q4 (Pie)
+    renderBarChart('chart-q5', stats.q5 || {}, stats.total); // Q5 (Bar)
+    // ===================================
     
     const listElement = document.getElementById('special-methods-list');
     listElement.innerHTML = '';
-    // (수정) 기존 Q5 -> Q6
+    // Q6 (특별한 방법)
     if (Array.isArray(stats.q6) && stats.q6.length) {
       stats.q6.forEach(m => {
         const li = document.createElement('li');
@@ -262,21 +259,16 @@ async function updateStatisticsTab() {
   }
 }
 
-// ==================================================
-// (수정된 부분) "await" 및 "try/catch" 제거
-// ==================================================
 document.getElementById('stress-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
   const record = collectFormData(form);
   
-  // (수정) 새 Q1 필수 응답 체크
   if (!record.stress_level) {
     alert('1번 질문(스트레스 수준)에 응답해주세요.');
     return;
   }
   
-  // (수정) 기존 Q1 -> Q2 필수 응답 체크
   if (!record.stress_situation || record.stress_situation.length === 0) {
     alert('2번 질문(스트레스 상황)은 최소 1개 이상 선택해야 합니다.');
     return;
@@ -289,12 +281,9 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   // 1. "Fire-and-forget": GAS로 전송 요청을 보내되, 응답을 기다리지 않습니다.
   postToGAS(record)
     .then(() => {
-      // (데이터 전송 및 응답 수신 모두 성공한 경우 - 콘솔에만 기록)
       console.log("GAS 응답 수신 성공.");
     })
     .catch(err => {
-      // (응답 수신에 실패한 경우(시간 초과) - 콘솔에만 기록)
-      // 이미 데이터는 시트로 넘어갔을 확률이 높습니다.
       console.warn("GAS 응답 수신 실패 (데이터는 전송되었을 수 있음):", err.message);
     });
 
@@ -307,9 +296,8 @@ document.getElementById('stress-form').addEventListener('submit', async (e) => {
   btn.disabled = false;
   btn.textContent = '✅ 설문 제출하기';
 });
-// ==================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   setupEtcToggle();
-  setupQ2Limit(2); // (수정) Q1 -> Q2
+  setupQ2Limit(2); 
 });
